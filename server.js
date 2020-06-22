@@ -11,71 +11,52 @@ var PORT = 3000;
 // Sets up the Express app to handle data parsing
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.static('public'));
 
 // Reservation Info (DATA)
 // =============================================================
-var reservation = [{
-  customerName: "Melissa",
-			phoneNumber: "123",
-			customerEmail: "123@gmail.com",
-			customerID: "75"}
-];
 
-var waitlist = [{
-  customerName: "Melissa",
-			phoneNumber: "123",
-			customerEmail: "123@gmail.com",
-			customerID: "75"}
-];
-
+var notes = [];
+var currentID = 0;
 // Routes
 // =============================================================
 
 // Basic route that sends the user first to the AJAX Page
-app.get("/", function(req, res) {
+app.get("/", function (req, res) {
   // res.send("Welcome to the Star Wars Page!")
-  res.sendFile(path.join(__dirname, "home.html"));
+  res.sendFile(path.join(__dirname, "/public/index.html"));
+});
+
+app.get("/notes", function (req, res) {
+
+  res.sendFile(path.join(__dirname, "/public/notes.html"));
 });
 
 // Displays all characters
-app.get("/tables", function(req, res) {
-  res.sendFile(path.join(__dirname, "tables.html"));
+app.get("/api/notes", function (req, res) {
+  res.json(notes);
 });
 
-app.get("/reserve", function(req, res) {
-  res.sendFile(path.join(__dirname, "reserve.html"));
-});
-
-app.get("/api/tables", function(req, res) {
-  // Return the data that exist
-  res.json(reservation);
-});
-
-app.get("/api/waitlist", function(req, res) {
-  // Return the data that exist
-  res.json(waitlist);
-});
 
 // Create New Characters - takes in JSON input
-app.post("/api/tables", function(req, res) {
-  // Return the data that exist
-  if(reservation.length<=4){
-  reservation.push(req.body);
-  }
-  else{
-    waitlist.push(req.body);
-  }
-  res.json(reservation);
+app.post("/api/notes", function (req, res) {
+  note = req.body;
+  note.id = currentID;
+  currentID += 1;
+  notes.push(note);
+  res.json(notes);
 });
 
-app.post("/api/waitlist", function(req, res) {
-  // Return the data that exist
-  res.json(waitlist);
+app.delete("/api/notes/:id", function (req, res) {
+  var id = req.params.id;
+  for (var i = 0; i < notes.length; i++) {
+    if (parseInt(notes[i].id) === parseInt(id)) { notes.splice(i, 1); }
+  }
+  res.json(notes);
 });
-
 
 // Starts the server to begin listening
 // =============================================================
-app.listen(PORT, function() {
+app.listen(PORT, function () {
   console.log("App listening on PORT " + PORT);
 });
