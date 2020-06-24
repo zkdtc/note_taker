@@ -2,6 +2,7 @@
 // =============================================================
 var express = require("express");
 var path = require("path");
+var fs = require("fs");
 
 // Sets up the Express App
 // =============================================================
@@ -16,8 +17,20 @@ app.use(express.static('public'));
 // Reservation Info (DATA)
 // =============================================================
 
-var notes = [];
+var notes=[];
 var currentID = 0;
+fs.readFile(path.join(__dirname, "/db/db.json"), (err, data) => {
+  if (err) throw err;
+  notes = JSON.parse(data);
+  console.log('good');
+  for (i=0; i<notes.length; i++){
+    console.log(parseInt(notes[i].id));
+    if(parseInt(notes[i].id)>currentID)
+    { currentID=parseInt(notes[i].id)+1}
+  }
+});
+
+
 // Routes
 // =============================================================
 
@@ -44,6 +57,10 @@ app.post("/api/notes", function (req, res) {
   note.id = currentID;
   currentID += 1;
   notes.push(note);
+  fs.writeFile(path.join(__dirname, "/db/db.json"), JSON.stringify(notes), (err) => {
+    if (err) throw err;
+    console.log('The file has been saved!');
+  });
   res.json(notes);
 });
 
@@ -52,6 +69,10 @@ app.delete("/api/notes/:id", function (req, res) {
   for (var i = 0; i < notes.length; i++) {
     if (parseInt(notes[i].id) === parseInt(id)) { notes.splice(i, 1); }
   }
+  fs.writeFile(path.join(__dirname, "/db/db.json"), JSON.stringify(notes), (err) => {
+    if (err) throw err;
+    console.log('The file has been saved!');
+  });
   res.json(notes);
 });
 
